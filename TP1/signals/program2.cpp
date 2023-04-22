@@ -2,28 +2,27 @@
 #include <string>
 #include <sstream>
 #include <csignal>
-
-#include <iostream>
 using std::stringstream;
 using namespace std;
 
 int main(int argc, char  *argv[])
 {
     int id, sig;
- 
-	(argv[1] - 48)>> id;
-	(argv[2] - 48) >> sig;
-	
-    try{
+    id  = atoi(argv[1]);
+    sig = atoi(argv[2]);
+
+    cout << "Sending Signal " << sig << " to PID " << id << '\n';
+
+    try {
         int status = kill(id, sig);
         if(status != 0){
-            throw CException("Erro no sinal");
+            string error_message = "Program with PID " +  std::to_string(id) + " not found";
+            throw std::invalid_argument(error_message);
         }
-    }
-    catch(std::exception& e){
+    } catch(exception& e){
         cout << e.what() << '\n';
     }
-    
-
+ 
+ 
 	return 0;
 }

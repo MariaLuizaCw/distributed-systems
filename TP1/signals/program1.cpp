@@ -7,7 +7,7 @@ using namespace std;
 void signal_handler_1(int signal_num)
 {	
 
-	cout << "First type of signal (" << signal_num << "). \n";
+	cout << "First type of signal (" << signal_num << "). Interromping process! \n";
 	exit(2);
 }
 

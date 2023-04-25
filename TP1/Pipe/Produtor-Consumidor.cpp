@@ -22,48 +22,21 @@ bool primo(int n){
     return true;
 }
 
-void consumidor(int file){
-    int received;
-    char cnum;
+void consumidor(int pipe_rd){
+    int received= 1;
     string current = "";
 
-    FILE *pipe = fdopen(file, "r");
-    if(pipe == NULL){
-        printf("Error opening pipe\n");
-    }
-    while(1) {
-        received = fscanf(pipe, "%c", &cnum);
-        if(received >= 1){
-            if (cnum == '0'){
-            
-                printf("Consumer received 0! Finishing process \n");
-                break;
+    while(received != 0) {
+        if (primo(received)){
+                printf("Prime number received from child process: %d\n", received);
             }
-            else if (cnum == ' '){
-                if (primo(stoi(current)))
-                {
-                    printf("%s -> Prime number\n", current.c_str());
-                }
-                else
-                {
-                    printf("%s -> Not a prime number\n", current.c_str());
-                }
-                current = "";
-            }else{
-                current.push_back(cnum);
+        read(pipe_rd, &received, sizeof(received));
+        }
 
-            }}else{
-                printf("Empty Pipe\n");
-            }
-    }
-    fclose(pipe);
 }
 	  
   
-void produtor( int inter, int file){
-    FILE *pipe;
-    pipe = fdopen(file,"w");
-
+void produtor( int inter, int pipe_wr){
     int N0 = 1;
     int delta, N;
     int sent = 0;
@@ -74,15 +47,11 @@ void produtor( int inter, int file){
 
     for(int i=0; i < inter; i++){
         N = N0 + delta;
-        string pd = to_string(N) + " " ;
-        fprintf(pipe, "%s", pd.c_str());
+        write(pipe_wr, &N, sizeof(N));
         printf("Producer send:  %d\n", N);
         N0 = N;
-    };
-
-    fprintf(pipe, "%d", 0);
-    fclose(pipe);
-}
+    }; 
+};
 
 	
 
@@ -101,16 +70,20 @@ int main(int argc, char* argv[]){
         return EXIT_FAILURE;
     }
 
-    if(pid == (pid_t)0) { //child
-        close(pd[1]);
-        consumidor(pd[0]);
-        return EXIT_SUCCESS;
-    } else{ //parent
+    if(pid == (pid_t)0) { //child -> producer 
         close(pd[0]);
         produtor(atoi(argv[1]), pd[1]);
-        waitpid(pid, NULL, 0);
-        return EXIT_SUCCESS;
+        int N = 0;
+        write(pd[1], &N , sizeof(N));        
+        close(pd[1]);
+
+    } else{ //parent -> consumer
+        close(pd[1]);
+        consumidor(pd[0]);
+        printf("Consumer terminated\n");
+        close(pd[0]);
     }
+    return 0;
 }
 
 

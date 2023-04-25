@@ -36,7 +36,7 @@ int main(int argc, char const* argv[])
         // Protocol value for Internet Protocol(IP), which is 0
         int server_fd = socket(AF_INET, SOCK_STREAM, 0);
         if (server_fd < 0){
-            throw runtime_error("Fail to create the soocket");
+            throw runtime_error("Fail to create the socket");
         }
         
         // It helps in reuse of address and port
@@ -53,7 +53,7 @@ int main(int argc, char const* argv[])
             throw runtime_error("Fail to bind socket");
         }
 
-        int lst = listen(server_fd, 10);
+        int lst = listen(server_fd, 3);
         
         if (lst < 0){
             throw runtime_error("Fail to listen");
@@ -70,10 +70,10 @@ int main(int argc, char const* argv[])
 
             while(true){
                 data = read(new_socket, client_message, 20);
-                cout << client_message << '\n';
+               
                 is_prime = 1;
                 int random_number = atoi(client_message);
-                
+                cout << "Server recieved number: " << random_number << '\n';
                 if(random_number == 0){
                     break;
                 }

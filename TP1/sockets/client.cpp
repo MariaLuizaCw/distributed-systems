@@ -35,7 +35,7 @@ int main(int argc, char const* argv[])
   
         // Convert IPv4 and IPv6 addresses from text to binary
         // form
-        if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0) {
+        if (inet_pton(AF_INET, "192.168.0.13", &serv_addr.sin_addr) <= 0) {
             throw runtime_error("Fail to convert address");
         }
     
@@ -56,7 +56,7 @@ int main(int argc, char const* argv[])
             send(client_fd, send_message, 20, 0);
             data = read(client_fd, incoming_message, 20);
             while (data < 0);
-            cout << incoming_message << '\n';
+            cout << "Server Message (0-no/1-yes):" << atoi(incoming_message) << '\n';
         }
 
           

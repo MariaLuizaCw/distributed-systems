@@ -38,15 +38,16 @@ void consumidor(int pipe_rd){
   
 void produtor( int inter, int pipe_wr){
     int N0 = 1;
-    int delta, N;
+    int N;
     int sent = 0;
 
     unsigned seed = time(0);
     srand(seed); 
-    delta = 1 + rand()%100;
+    int delta = 0;
 
     for(int i=0; i < inter; i++){
         N = N0 + delta;
+        delta = 1 + rand()%100;
         write(pipe_wr, &N, sizeof(N));
         printf("Producer send:  %d\n", N);
         N0 = N;

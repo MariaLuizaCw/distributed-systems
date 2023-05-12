@@ -18,13 +18,16 @@
 using namespace std;
 int main(int argc, char const* argv[])
 {
-    int status, data, client_fd, delta;
+    int status, data, client_fd;
     struct sockaddr_in serv_addr;
     char incoming_message[20];
     char send_message[20];
 
     int n_numbers = atoi(argv[1]);
-    int random_num = 0;
+    int random_num = 1;
+    int delta = 0;
+    unsigned seed = time(0);
+    srand(seed);
     try {
         client_fd = socket(AF_INET, SOCK_STREAM, 0);
         if (client_fd < 0) {
@@ -35,7 +38,7 @@ int main(int argc, char const* argv[])
   
         // Convert IPv4 and IPv6 addresses from text to binary
         // form
-        if (inet_pton(AF_INET, "192.168.0.13", &serv_addr.sin_addr) <= 0) {
+        if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0) {
             throw runtime_error("Fail to convert address");
         }
     
@@ -46,9 +49,8 @@ int main(int argc, char const* argv[])
         }
         
         while(n_numbers--){
-            
-            
-            random_num = random_num + (rand()%10);
+            random_num = random_num + delta;
+            delta = 1 + rand()%100;
             cout << "Random number: " << random_num << '\n';
             
             sprintf(send_message, "%d", random_num);

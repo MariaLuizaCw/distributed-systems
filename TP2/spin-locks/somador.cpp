@@ -70,14 +70,18 @@ int main(int argc, const char *argv[]){
     } 
 
     // Spawn Threads
+    clock_t start = clock();
+
     vector<thread> threads(n);
     for (int i = 0; i < k; i++) {
         threads[i] = thread(Add, i);
     }
+
     for (int i = 0; i < k; i++) {
         threads[i].join();
     }
-
+    clock_t end = clock();
+    double time_spent = (double)(end - start) / CLOCKS_PER_SEC;
 
     //Check Sum
     for (int i =0; i < n; i++){
@@ -85,7 +89,6 @@ int main(int argc, const char *argv[]){
     } 
 
     try{
-        cout << "Result "<< check_sum << ' ' << threads_sum << '\n';
         if (check_sum != threads_sum){
             throw runtime_error("Results are not the same!");
         } else {
@@ -95,5 +98,6 @@ int main(int argc, const char *argv[]){
          cout << e.what() << '\n';
     }
 
+    cout << "Time spent: " << time_spent << '\n';
 
 }

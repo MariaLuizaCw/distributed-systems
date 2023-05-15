@@ -44,6 +44,7 @@ void Add(int i){
     }
 
     spinlock.acquire();
+    cout << "Thread " << i << " got critical region" << '\n';
     threads_sum += thread_result;
     spinlock.release();
     
@@ -55,6 +56,9 @@ void Add(int i){
 int main(int argc, const char *argv[]){
     long check_sum = 0;
     unsigned seed = time(0);
+    struct timespec start, finish;
+    double elapsed;
+
     threads_sum = 0;
     n = pow(10, atoi(argv[1]));
     k =  atoi(argv[2]);
@@ -70,9 +74,9 @@ int main(int argc, const char *argv[]){
     } 
 
     // Spawn Threads
-    clock_t start = clock();
+    clock_gettime(CLOCK_MONOTONIC, &start);
 
-    vector<thread> threads(n);
+    vector<thread> threads(k);
     for (int i = 0; i < k; i++) {
         threads[i] = thread(Add, i);
     }
@@ -80,9 +84,10 @@ int main(int argc, const char *argv[]){
     for (int i = 0; i < k; i++) {
         threads[i].join();
     }
-    clock_t end = clock();
-    double time_spent = (double)(end - start) / CLOCKS_PER_SEC;
+    clock_gettime(CLOCK_MONOTONIC, &finish);
 
+    elapsed = (finish.tv_sec - start.tv_sec);
+    elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
     //Check Sum
     for (int i =0; i < n; i++){
 		check_sum +=  numbers[i]; 
@@ -98,6 +103,6 @@ int main(int argc, const char *argv[]){
          cout << e.what() << '\n';
     }
 
-    cout << "Time spent: " << time_spent << '\n';
+    cout << "Time spent: " << elapsed << '\n';
 
 }

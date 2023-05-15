@@ -45,7 +45,6 @@ void produtor()
             if (posicao != memoria.end()) {
                 int pos = posicao - memoria.begin();
                 memoria[pos] = valor_aleatorio;
-                // cout<< "Num : " << valor_aleatorio << " posição de memoria: " << pos <<  '\n';
             }
         sem_post(&mutex_fila);
         sem_post(&full);
@@ -65,21 +64,21 @@ void consumidor()
             if (posicao != memoria.end()) {    
                 int pos = posicao - memoria.begin();
                 valor_recolhido = memoria[pos];
-                // cout<< "Num : " << valor_recolhido << " posição de memoria: " << pos <<  '\n';
                 memoria[pos] = 0;
             }    
         sem_post(&mutex_fila);
         sem_post(&empty_mem);
 
+        sem_wait(&mutex_encerramento);
         if(is_prime(valor_recolhido)){
             cout << valor_recolhido << " é primo\n";
         }else{
             cout << valor_recolhido << " não é primo\n";
         } 
-        sem_wait(&mutex_encerramento);
             num_val_processar--;
         sem_post(&mutex_encerramento);
     }
+     
     sem_post(&full);
     sem_post(&empty_mem);
 }
@@ -99,19 +98,22 @@ int main(int argc, char* argv[])
     
     vector<thread> threads;
 
-    clock_t start_time, end_time;
-    double elapsed_time;
-    start_time = clock();
+    struct timespec start, finish;
+    double elapsed;
+
+    clock_gettime(CLOCK_MONOTONIC, &start);
 
     for (int i = 0; i < num_th_prod; i++) threads.push_back(thread(produtor));
     for (int i = 0; i < num_th_consum; i++) threads.push_back(thread(consumidor));
 
     for (auto& th : threads) th.join();
 
-    end_time = clock();
-    elapsed_time = (double) (end_time - start_time) / CLOCKS_PER_SEC;
+    clock_gettime(CLOCK_MONOTONIC, &finish);
+
+    elapsed = (finish.tv_sec - start.tv_sec);
+    elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
     cout << " rodou todos os testes\n";
-    cout << "M: " << tamanho_fila << " np: "<< num_th_prod << " np: "<< num_th_consum << " tempo: " << elapsed_time << '\n';
+    cout << "M: " << tamanho_fila << " np: "<< num_th_prod << " np: "<< num_th_consum << " tempo: " << elapsed << '\n';
 
     return 0;
 }

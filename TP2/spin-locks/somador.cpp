@@ -93,14 +93,10 @@ int main(int argc, const char *argv[]){
 		check_sum +=  numbers[i]; 
     } 
 
-    try{
-        if (check_sum != threads_sum){
-            throw runtime_error("Results are not the same!");
-        } else {
-            cout << "Numbers were succesfuly added by threads!" << "\n";
-        }
-    } catch (exception& e){
-         cout << e.what() << '\n';
+    if (check_sum != threads_sum){
+        throw runtime_error("Results are not the same!");
+    } else {
+        cout << "Numbers were succesfuly added by threads!" << "\n";
     }
 
     cout << "Time spent: " << elapsed << '\n';

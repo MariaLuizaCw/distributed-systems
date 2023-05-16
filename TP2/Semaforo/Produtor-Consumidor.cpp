@@ -11,9 +11,9 @@ using namespace std;
 sem_t full;
 sem_t empty_mem;
 int num_val_processar = 100000;
-int tamanho_fila;
-sem_t mutex_fila;
-sem_t mutex_encerramento;
+int tamanho_mem;
+sem_t mutex_mem;
+sem_t mutex_processar;
 
 vector<int> memoria;
 
@@ -40,13 +40,15 @@ void produtor()
     {
         int valor_aleatorio = 1 + rand() % numMax;
         sem_wait(&empty_mem);
-        sem_wait(&mutex_fila);
+        sem_wait(&mutex_mem);
+
             auto posicao = find(memoria.begin(), memoria.end(), 0);
             if (posicao != memoria.end()) {
                 int pos = posicao - memoria.begin();
                 memoria[pos] = valor_aleatorio;
             }
-        sem_post(&mutex_fila);
+        
+        sem_post(&mutex_mem);
         sem_post(&full);
     }
     sem_post(&full);
@@ -59,24 +61,24 @@ void consumidor()
     int valor_recolhido;
     while(num_val_processar > 0) {
         sem_wait(&full);
-        sem_wait(&mutex_fila);
+        sem_wait(&mutex_mem);
             auto posicao = find_if(memoria.begin(), memoria.end(),[](int x) { return x != 0; });
+
             if (posicao != memoria.end()) {    
                 int pos = posicao - memoria.begin();
                 valor_recolhido = memoria[pos];
                 memoria[pos] = 0;
             }    
-        sem_post(&mutex_fila);
+
+            num_val_processar--;
+        sem_post(&mutex_mem);
         sem_post(&empty_mem);
 
-        sem_wait(&mutex_encerramento);
-        if(is_prime(valor_recolhido)){
-            cout << valor_recolhido << " é primo\n";
-        }else{
-            cout << valor_recolhido << " não é primo\n";
-        } 
-            num_val_processar--;
-        sem_post(&mutex_encerramento);
+        int prime  = is_prime(valor_recolhido);
+
+        if (prime)
+            printf("%d é primo\n", valor_recolhido);
+      
     }
      
     sem_post(&full);
@@ -88,13 +90,12 @@ int main(int argc, char* argv[])
 {
     int num_th_prod = atoi(argv[1]);
     int num_th_consum = atoi(argv[2]);
-    tamanho_fila = atoi(argv[3]);
-    memoria.resize(tamanho_fila);
+    tamanho_mem = atoi(argv[3]);
+    memoria.resize(tamanho_mem);
 
     sem_init(&full,0,0);
-    sem_init(&empty_mem,0,tamanho_fila);
-    sem_init(&mutex_fila,0,1);
-    sem_init(&mutex_encerramento,0,1);
+    sem_init(&empty_mem,0,tamanho_mem);
+    sem_init(&mutex_mem,0,1);
     
     vector<thread> threads;
 
@@ -112,8 +113,8 @@ int main(int argc, char* argv[])
 
     elapsed = (finish.tv_sec - start.tv_sec);
     elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
-    cout << " rodou todos os testes\n";
-    cout << "M: " << tamanho_fila << " np: "<< num_th_prod << " np: "<< num_th_consum << " tempo: " << elapsed << '\n';
+    cout << "Rodou todos os testes\n";
+    cout << "M: " << tamanho_mem << " np: "<< num_th_prod << " np: "<< num_th_consum << " tempo: " << elapsed << '\n';
 
     return 0;
 }

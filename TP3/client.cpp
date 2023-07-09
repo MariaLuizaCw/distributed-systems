@@ -9,10 +9,64 @@
 #include <stdlib.h>
 #include <fstream>
 #include <string.h>
+#include <chrono>
+#include <ctime>
+#include <thread>
+
 using namespace std;
 
-int main()
+string CurrentTime()
 {   
+    cout << "begin CurrentTime" << endl;
+    auto now = chrono::system_clock::now();
+    auto now_ms = chrono::time_point_cast<chrono::milliseconds>(now);
+    auto value = now_ms.time_since_epoch().count();
+
+    time_t current_time = chrono::system_clock::to_time_t(now);
+    string time_string = ctime(&current_time);
+
+    // Remover o caractere de nova linha da string
+    time_string.erase(time_string.length() - 1);
+
+    // Converter o valor dos milissegundos para string
+    string ms = to_string(value % 1000);
+
+    // Formatando a string com milissegundos
+    time_string += "." + string(3 - ms.length(), '0') + ms;
+    cout << "end CurrentTime" << endl;
+    return time_string;
+}
+
+void WhriteResult(int k)
+{
+    cout << "begin white" << endl;
+    string fileName = "resultado.txt";
+
+    // Abrir o arquivo em modo append
+    ofstream outputFile(fileName, ios::app);
+
+    if (!outputFile)
+    {
+        cout << "Error opening file." << endl;
+        return;
+    }
+
+    // Escrever a hora atual com milissegundos no arquivo
+    outputFile << pthread_self()<< ' '  << CurrentTime() << endl;
+
+    // Fechar o arquivo
+    outputFile.close();
+
+    // Aguardar k segundos
+    this_thread::sleep_for(chrono::seconds(k));
+    cout << "end white" << endl;
+}
+
+int main(int argc, char* argv[])
+{   
+    //read var's process 
+    int r = atoi(argv[1]);
+    int k = atoi(argv[2]);
     //creating client socket
     int csock = socket(AF_INET, SOCK_STREAM,0);
     if (csock == -1)
@@ -30,38 +84,34 @@ int main()
     //connecting to the server
     int connreq = connect(csock,(sockaddr *)&hint, sizeof(sockaddr_in));
     //send to server
-    string msg = "REQUEST";
+    while (r > 0)
+    {   
+        cout << r <<"\n";
+        string msg = "REQUEST";
                 
-        int send_resquest_to_server = write(csock, msg.c_str(), msg.size() + 1);;
+        int send_resquest_to_server = write(csock, msg.c_str(), msg.size() + 1);
+        cout << "Send the resquest" <<"\n";
         if(send_resquest_to_server==-1)
         {
             cout<<"Error in sending\n";
         }
-    char buf[4096];
+        char buf[4096];
         memset(buf,0,4096);
+        cout << "Whait for server message" <<"\n";
         int recvmsg = recv(csock, buf, 4096,0); //receive message from server
-    if(strcmp(buf,"OK")==0) //if server sends ok then proceed with the file operations
-    {
-        fstream file1;
-        string first_item;
-        file1.open("shared_file.txt",ios::out | ios::in);
-        getline(file1,first_item);
-        file1.close(); 
-        cout<<"Value read from shared file: "<<first_item<<endl;
-        int temp = stoi(first_item);
-        temp++;
-        ofstream file2;
-        file2.open("shared_file.txt",ios::out | ios::in);
-        file2<<to_string(temp);
-        file2.close(); 
-        cout<<"Updated value: "<<temp<<endl;        
-        string msg1 = "RELEASED";
-        int send_response_to_server = write(csock, msg1.c_str(), msg1.size() + 1);;
-        if(send_response_to_server==-1)
-        {
-            cout<<"Error in sending\n";
+        cout << "buf : "<<buf <<"\n";
+        if(strcmp(buf,"OK")==0) //if server sends ok then proceed with the file operations == GRANT
+        {   
+            cout << "reseave GRANT" <<"\n";
+            WhriteResult(k);       
+            string msg1 = "RELEASED";
+            int send_response_to_server = write(csock, msg1.c_str(), msg1.size() + 1);;
+                if(send_response_to_server==-1)
+                {
+                    cout<<"Error in sending\n";
+                }
         }
-       
+    r--;
     }
   
 

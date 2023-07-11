@@ -30,40 +30,50 @@ int main()
     //connecting to the server
     int connreq = connect(csock,(sockaddr *)&hint, sizeof(sockaddr_in));
     //send to server
-    string msg = "REQUEST";
-                
-        int send_resquest_to_server = write(csock, msg.c_str(), msg.size() + 1);;
+    for(int i =0; i < 10; i++){
+
+        string msg = "REQUEST";
+                    
+        int send_resquest_to_server = write(csock, msg.c_str(), msg.size() + 1);
         if(send_resquest_to_server==-1)
         {
             cout<<"Error in sending\n";
+        } else {
+            cout << "Send request: " << send_resquest_to_server << '\n';
         }
-    char buf[4096];
+        char buf[4096];
         memset(buf,0,4096);
+
+
+
         int recvmsg = recv(csock, buf, 4096,0); //receive message from server
-    if(strcmp(buf,"OK")==0) //if server sends ok then proceed with the file operations
-    {
-        fstream file1;
-        string first_item;
-        file1.open("shared_file.txt",ios::out | ios::in);
-        getline(file1,first_item);
-        file1.close(); 
-        cout<<"Value read from shared file: "<<first_item<<endl;
-        int temp = stoi(first_item);
-        temp++;
-        ofstream file2;
-        file2.open("shared_file.txt",ios::out | ios::in);
-        file2<<to_string(temp);
-        file2.close(); 
-        cout<<"Updated value: "<<temp<<endl;        
-        string msg1 = "RELEASED";
-        int send_response_to_server = write(csock, msg1.c_str(), msg1.size() + 1);;
-        if(send_response_to_server==-1)
+        
+        if(strcmp(buf,"OK")==0) //if server sends ok then proceed with the file operations
         {
-            cout<<"Error in sending\n";
+            fstream file1;
+            string first_item;
+            file1.open("shared_file.txt",ios::out | ios::in);
+            getline(file1,first_item);
+            file1.close(); 
+            cout<<"Value read from shared file: "<<first_item<<endl;
+            int temp = stoi(first_item);
+            temp++;
+            ofstream file2;
+            file2.open("shared_file.txt",ios::out | ios::in);
+            file2<<to_string(temp);
+            file2.close(); 
+            cout<<"Updated value: "<<temp<<endl;        
+            sleep(10);
+            string msg1 = "RELEASED";
+            int send_response_to_server = write(csock, msg1.c_str(), msg1.size() + 1);;
+            if(send_response_to_server==-1)
+            {
+                cout<<"Error in sending\n";
+            }
+        
         }
-       
+
     }
-  
 
     close(csock);
     

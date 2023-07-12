@@ -25,24 +25,19 @@ vector<int>clientsocket;
 queue<int>pending_clients;
 
 
-void communicate_with_clients(int x);
+
+void generate_message(int code, int id, char message[10]) {
+    string mes = to_string(code) + '|' + to_string(id) + '|';
+    int len = mes.size();
+    if (10 - len > 0){
+        mes = mes.append(string( 10 - len, '0'));
+    }
+    strcpy(message, mes.c_str());
+
+}
 
 
 
-// void *operations(void *arg) {
-//     int client_socket = *((int *)arg);
-//     cout << "Client connected"
-//          << " " << client_socket << " "
-//          << "Thread ID"
-//          << " " << pthread_self() << endl;
-//     while (thread_ctr!=(number_of_clients)) //to cgheck if all the clients are connected or not
-//     {
-//         continue;
-//     }
-    
-//     communicate_with_clients(client_socket);
-   
-// }
 void request(int client_socket){
 
     pthread_mutex_lock(&client_queue);
@@ -54,8 +49,10 @@ void request(int client_socket){
         cout << "Client " << client_socket << " waiting to be front" << '\n';
         sleep(1);
     }
-    string msg = "OK"; 
-    int send_response_to_client = write(client_socket, msg.c_str(), msg.size() + 1);
+    char grant_msg[10];
+    generate_message(2, client_socket, grant_msg);
+    cout << grant_msg << '\n';
+    int send_response_to_client = send(client_socket, grant_msg, 10, 0);
 }
 
 void release(int client_socket){
@@ -77,27 +74,32 @@ void *communicate_with_clients (void *arg)
          << "Thread ID"
          << " " << pthread_self() << endl;
 
-    char msg_buf[4096];
-    memset(msg_buf,0,4096);
-
+    char msg_buf[10];
     while(go_on == 1){
         cout << "Waiting for client " << client_socket <<  " messages" << '\n';
-        int read_request_from_client = read(client_socket,msg_buf, 4096);
+        int read_request_from_client = read(client_socket,msg_buf, 10);
         cout << "Client " << client_socket << " send " << msg_buf << '\n';
 
         if(read_request_from_client==-1){
 
             cout <<"Error in reading message from client\n";
 
-        } else if(strcmp(msg_buf,"REQUEST")==0){
+        } else if (read_request_from_client == 0){
+
+            break;
+
+        } else if(msg_buf[0] == '1'){
 
             request(client_socket);
         }
-        else if (strcmp(msg_buf,"RELEASED")==0){
+        else if (msg_buf[0] == '3'){
 
             release(client_socket);
         }
     }   
+
+    pthread_exit(NULL);
+    
 }
 
 

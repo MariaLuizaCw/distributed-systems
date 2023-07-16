@@ -33,17 +33,25 @@ void generate_message(int code, int id, char message[10]) {
 
 }
 
+int readmessage(const char* message){
+    string msg = message;
+    string message_cut =  msg.substr(2); 
 
+    int  position_second = message_cut.find("|");
+    int pid = stoi(message_cut.substr(0,position_second));
+    cout << pid << "\n";
+    return pid;
+}
 
-void request(int client_socket){
+void request(int pid,int client_socket){
 
     pthread_mutex_lock(&client_queue);
-    pending_clients.push(client_socket); //adding pending clients in the queue
+    pending_clients.push(pid); //adding pending clients in the queue
     cout << "Front " << pending_clients.front()  << '\n';
     pthread_mutex_unlock(&client_queue);
 
-    while(pending_clients.front() != client_socket && go_on == 1){
-        cout << "Client " << client_socket << " waiting to be front" << '\n';
+    while(pending_clients.front() != pid && go_on == 1){
+        cout << "Client " << pid << " waiting to be front" << '\n';
         sleep(1);
     }
 
@@ -51,13 +59,13 @@ void request(int client_socket){
         return;
     } else {
         char grant_msg[10];
-        generate_message(2, client_socket, grant_msg);
+        generate_message(2, pid, grant_msg);
         cout << grant_msg << '\n';
         int send_response_to_client = send(client_socket, grant_msg, 10, 0);
     }
 }
 
-void release(int client_socket){
+void release(int pid){
 
     pthread_mutex_lock(&client_queue);
     cout << "Front Before " << pending_clients.front()  << '\n';
@@ -91,12 +99,12 @@ void *communicate_with_clients (void *arg)
             break;
 
         } else if(msg_buf[0] == '1'){
-
-            request(client_socket);
+            int pid = readmessage(msg_buf);
+            request(pid,client_socket);
         }
         else if (msg_buf[0] == '3'){
-
-            release(client_socket);
+            int pid = readmessage(msg_buf);
+            release(pid);
         }
     }   
 

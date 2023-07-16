@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
     //connecting to the server
     int connreq = connect(csock,(sockaddr *)&hint, sizeof(sockaddr_in));
     //send to server
-    for(int i =0; i < 10; i++){
+    for(int i =0; i < r; i++){
 
         char request_msg[10];
         generate_message(1, getpid(), request_msg);

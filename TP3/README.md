@@ -3,7 +3,7 @@
 	1.2  imprimir quantas vezes cada processo foi atendido
 	1.3  encerrar a execução do coordenador
 
-2. Padrão de mensagem [Yasmin]
+2. Padrão de mensagem [Yasmin] 
 3. O arquivo de log do coordenador [Yasmin]
 4. Operações na região crítica do processo [Yasmin]
 	

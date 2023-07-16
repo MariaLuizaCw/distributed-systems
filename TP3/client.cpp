@@ -56,7 +56,6 @@ void generate_message(int code, int id, char message[10]) {
 
 void WhriteResult(int k)
 {
-    cout << "begin white" << endl;
     string fileName = "resultado.txt";
 
     // Abrir o arquivo em modo append
@@ -69,7 +68,7 @@ void WhriteResult(int k)
     }
 
     // Escrever a hora atual com milissegundos no arquivo
-    outputFile << pthread_self()<< ' '  << CurrentTime() << endl;
+    outputFile << getpid()<< ' '  << CurrentTime() << endl;
 
     // Fechar o arquivo
     outputFile.close();
@@ -116,7 +115,7 @@ int main(int argc, char* argv[])
         if(buf[0] == '2') //if server sends ok then proceed with the file operations == GRANT
         {   
             cout << "reseave GRANT" <<"\n";
-            // WhriteResult(k);       
+            WhriteResult(k);       
             // sleep(4);
             
             char release_msg[10];

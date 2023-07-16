@@ -3,15 +3,19 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <chrono>
+#include <ctime>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <iostream>
 #include <queue>
+#include <fstream>
 #include <map>
 pthread_mutex_t client_queue = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t client_map = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t logfile = PTHREAD_MUTEX_INITIALIZER;
 
 using namespace std;
 int fileinuse=0;
@@ -23,6 +27,31 @@ vector<int>clientsocket;
 queue<int>pending_clients;
 map<int,int> served_clients;
 
+string CurrentTime()
+{   
+    cout << "begin CurrentTime" << endl;
+    auto now = chrono::system_clock::now();
+    auto now_ms = chrono::time_point_cast<chrono::milliseconds>(now);
+    auto value = now_ms.time_since_epoch().count();
+
+    time_t current_time = chrono::system_clock::to_time_t(now);
+    string time_string = ctime(&current_time);
+
+    // Remover o caractere de nova linha da string
+    time_string.erase(time_string.length() - 1);
+    tm timeInfo;
+    strptime(time_string.c_str(), "%a %b %e %H:%M:%S %Y", &timeInfo);
+    char timeString[9];
+    strftime(timeString, sizeof(timeString), "%T", &timeInfo);
+    string timeFormatted(timeString);
+    // Converter o valor dos milissegundos para string
+    string ms = to_string(value % 1000);
+
+    // Formatando a string com milissegundos
+    timeFormatted += ":" + string(3 - ms.length(), '0') + ms;
+    cout << "end CurrentTime" << endl;
+    return timeFormatted;
+}
 
 void generate_message(int code, int id, char message[10]) {
     string mes = to_string(code) + '|' + to_string(id) + '|';
@@ -32,6 +61,25 @@ void generate_message(int code, int id, char message[10]) {
     }
     strcpy(message, mes.c_str());
 
+}
+
+void writelog(string command, int origem, string tempo){
+    pthread_mutex_lock(&logfile);
+    string fileName = "log.txt";
+    ofstream outputFile(fileName, ios::app);
+
+    if (!outputFile)
+    {
+        cout << "Error opening file." << endl;
+        return;
+    }
+
+    // Escrever a hora atual com milissegundos no arquivo
+    outputFile  << tempo << " - " << origem << " - "  << command  << endl;
+
+    // Fechar o arquivo
+    outputFile.close();
+    pthread_mutex_unlock(&logfile);
 }
 
 int readmessage(const char* message){
@@ -44,7 +92,6 @@ int readmessage(const char* message){
 }
 
 void request(int pid,int client_socket){
-
     pthread_mutex_lock(&client_queue);
     pending_clients.push(pid); //adding pending clients in the queue
     pthread_mutex_unlock(&client_queue);
@@ -56,8 +103,8 @@ void request(int pid,int client_socket){
     } else {
         char grant_msg[10];
         generate_message(2, pid, grant_msg);
+        writelog("[S] Grant",pid, CurrentTime());
         int send_response_to_client = send(client_socket, grant_msg, 10, 0);
-
         pthread_mutex_lock(&client_map); 
         if (served_clients.find(pid) != served_clients.end()){
             served_clients[pid] += 1; 
@@ -74,8 +121,6 @@ void release(int pid){
     pending_clients.pop(); //adding pending clients in the queue
     pthread_mutex_unlock(&client_queue);
 }
-
-
 
 void *communicate_with_clients (void *arg)
 {  
@@ -94,10 +139,12 @@ void *communicate_with_clients (void *arg)
 
         } else if(msg_buf[0] == '1'){
             int pid = readmessage(msg_buf);
+            writelog("[R] Request", pid, CurrentTime());
             request(pid,client_socket);
         }
         else if (msg_buf[0] == '3'){
             int pid = readmessage(msg_buf);
+            writelog("[R] Release", pid, CurrentTime());
             release(pid);
         }
     }   
@@ -105,8 +152,6 @@ void *communicate_with_clients (void *arg)
     pthread_exit(NULL);
     
 }
-
-
 
 int open_socket(){
     listening = socket(AF_INET, SOCK_STREAM, 0);
@@ -142,7 +187,6 @@ int open_socket(){
     return listening;
 }
 
-
 void *thread_creator(void* x){
     sockaddr_in client;
     socklen_t clientsize = sizeof(client);
@@ -162,7 +206,6 @@ void *thread_creator(void* x){
     cout << "Creator Leaving" << '\n';
     pthread_exit(NULL);
 }
-
 
 int main() {  
     listening = open_socket();

@@ -101,7 +101,6 @@ void *communicate_with_clients (void *arg)
             release(pid);
         }
     }   
-    cout << "Client " << client_socket <<  " Leaving" << '\n';
     pthread_exit(NULL);
     
 }
@@ -159,7 +158,6 @@ void *thread_creator(void* x){
         thread_ctr++;
        
     }
-    cout << "Creator Leaving" << '\n';
     pthread_exit(NULL);
 }
 

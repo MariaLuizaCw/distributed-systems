@@ -27,7 +27,7 @@ void generate_message(int code, int id, char message[10]) {
 int main()
 {   
     char request_msg[10];
-    generate_message(1, 2, request_msg);
+    generate_message(1, 20, request_msg);
     cout << request_msg << '\n';
     // char request_msg[10];
 

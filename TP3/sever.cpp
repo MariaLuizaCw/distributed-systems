@@ -9,8 +9,9 @@
 #include <unistd.h>
 #include <iostream>
 #include <queue>
+#include <map>
 pthread_mutex_t client_queue = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t file = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t client_map = PTHREAD_MUTEX_INITIALIZER;
 
 using namespace std;
 int fileinuse=0;
@@ -20,7 +21,7 @@ int go_on = 1;
 vector<pthread_t>threads;
 vector<int>clientsocket;
 queue<int>pending_clients;
-
+map<int,int> served_clients;
 
 
 void generate_message(int code, int id, char message[10]) {
@@ -39,30 +40,31 @@ void request(int client_socket){
 
     pthread_mutex_lock(&client_queue);
     pending_clients.push(client_socket); //adding pending clients in the queue
-    cout << "Front " << pending_clients.front()  << '\n';
     pthread_mutex_unlock(&client_queue);
 
-    while(pending_clients.front() != client_socket && go_on == 1){
-        cout << "Client " << client_socket << " waiting to be front" << '\n';
-        sleep(1);
-    }
+    while(pending_clients.front() != client_socket && go_on == 1);
 
     if (go_on == 0){
         return;
     } else {
         char grant_msg[10];
         generate_message(2, client_socket, grant_msg);
-        cout << grant_msg << '\n';
         int send_response_to_client = send(client_socket, grant_msg, 10, 0);
+
+        pthread_mutex_lock(&client_map); 
+        if (served_clients.find(client_socket) != served_clients.end()){
+            served_clients[client_socket] += 1; 
+        } else {
+            served_clients[client_socket] = 1;
+        }
+        pthread_mutex_unlock(&client_map);
     }
 }
 
-void release(int client_socket){
+void release(){
 
     pthread_mutex_lock(&client_queue);
-    cout << "Front Before " << pending_clients.front()  << '\n';
     pending_clients.pop(); //adding pending clients in the queue
-    cout << "Front After " << pending_clients.front()  << '\n';
     pthread_mutex_unlock(&client_queue);
 }
 
@@ -71,16 +73,9 @@ void release(int client_socket){
 void *communicate_with_clients (void *arg)
 {  
     int client_socket = *((int *)arg);
-    cout << "Client connected"
-         << " " << client_socket << " "
-         << "Thread ID"
-         << " " << pthread_self() << endl;
-
     char msg_buf[10];
     while(go_on == 1){
-        cout << "Waiting for client " << client_socket <<  " messages" << '\n';
         int read_request_from_client = read(client_socket,msg_buf, 10);
-        cout << "Client " << client_socket << " send " << msg_buf << '\n';
 
         if(read_request_from_client==-1){
 
@@ -91,19 +86,13 @@ void *communicate_with_clients (void *arg)
             break;
 
         } else if(msg_buf[0] == '1'){
-
             request(client_socket);
         }
         else if (msg_buf[0] == '3'){
 
-            release(client_socket);
+            release();
         }
     }   
-
-    // char leave_msg[10];
-    // generate_message(4, client_socket, leave_msg);
-    // cout << leave_msg << '\n';
-    // int send_response_to_client = send(client_socket, leave_msg, 10, 0);
     cout << "Client " << client_socket <<  " Leaving" << '\n';
     pthread_exit(NULL);
     
@@ -157,7 +146,7 @@ void *thread_creator(void* x){
         clientsocket.push_back(new_socket);
         pthread_t new_thread;
         threads.push_back(new_thread);
-        cout << "counter " << thread_ctr << '\n';
+        cout << "Client " << thread_ctr  << " connected" << '\n';
         pthread_create(&threads[thread_ctr], NULL, communicate_with_clients, &clientsocket[thread_ctr]);
         thread_ctr++;
        
@@ -186,12 +175,25 @@ int main() {
                     close(clientsocket[p]);     //waiting for all threads to finish                    
             }
             pthread_join(creator_thread, NULL);
-            cout << "ended threads" << '\n';
+            cout << "Ended threads" << '\n';
             exit(0);
+
         } else if (input == 1){
-            cout << "teste1" << '\n';
+            cout << "Fila de Pedidos" << '\n';
+            pthread_mutex_lock(&client_queue);
+            int queau_size = pending_clients.size();
+            for(int i = 0; i < queau_size; i++){
+                int front = pending_clients.front();
+                cout << "Pedido " << i << ": " << front << '\n';
+                pending_clients.pop();  
+                pending_clients.push(front);
+            }
+            pthread_mutex_unlock(&client_queue);
+
         } else if (input == 3){
-            cout << "teste3" << '\n';
+            for(const auto& elem : served_clients){
+                cout << "Client " << elem.first << " was served " << elem.second << " times \n";
+            }
         }
     }
 

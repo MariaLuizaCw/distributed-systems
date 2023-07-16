@@ -9,11 +9,8 @@
 #include <unistd.h>
 #include <iostream>
 #include <queue>
-#define number_of_clients 2
 pthread_mutex_t client_queue = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t file = PTHREAD_MUTEX_INITIALIZER;
-
-
 
 using namespace std;
 int fileinuse=0;
@@ -45,14 +42,19 @@ void request(int client_socket){
     cout << "Front " << pending_clients.front()  << '\n';
     pthread_mutex_unlock(&client_queue);
 
-    while(pending_clients.front() != client_socket){
+    while(pending_clients.front() != client_socket && go_on == 1){
         cout << "Client " << client_socket << " waiting to be front" << '\n';
         sleep(1);
     }
-    char grant_msg[10];
-    generate_message(2, client_socket, grant_msg);
-    cout << grant_msg << '\n';
-    int send_response_to_client = send(client_socket, grant_msg, 10, 0);
+
+    if (go_on == 0){
+        return;
+    } else {
+        char grant_msg[10];
+        generate_message(2, client_socket, grant_msg);
+        cout << grant_msg << '\n';
+        int send_response_to_client = send(client_socket, grant_msg, 10, 0);
+    }
 }
 
 void release(int client_socket){
@@ -98,6 +100,11 @@ void *communicate_with_clients (void *arg)
         }
     }   
 
+    // char leave_msg[10];
+    // generate_message(4, client_socket, leave_msg);
+    // cout << leave_msg << '\n';
+    // int send_response_to_client = send(client_socket, leave_msg, 10, 0);
+    cout << "Client " << client_socket <<  " Leaving" << '\n';
     pthread_exit(NULL);
     
 }
@@ -155,6 +162,7 @@ void *thread_creator(void* x){
         thread_ctr++;
        
     }
+    cout << "Creator Leaving" << '\n';
     pthread_exit(NULL);
 }
 
@@ -172,17 +180,14 @@ int main() {
         cin >> input;
         if(input == 2){
             go_on = 0;
-            cout << "terminating threads" << '\n';
+            shutdown(listening, SHUT_RDWR);
             for(int p = 0; p < threads.size(); p++){
-                    cout << "terminating thread " << threads[p] << '\n';
-                    pthread_join(threads[p], NULL);  
+                    pthread_join(threads[p], NULL);
                     close(clientsocket[p]);     //waiting for all threads to finish                    
             }
-            cout << "terminating creator thread" << '\n';
             pthread_join(creator_thread, NULL);
             cout << "ended threads" << '\n';
-            shutdown(listening, SHUT_RDWR);
-
+            exit(0);
         } else if (input == 1){
             cout << "teste1" << '\n';
         } else if (input == 3){

@@ -7,7 +7,7 @@
 3. O arquivo de log do coordenador [Yasmin]
 4. Operações na região crítica do processo [Yasmin]
 	
-5. Servidor receber clientes sob demanda?
+5. Servidor receber clientes sob demanda? Acho que foi
 
 6. Modularização do código
 7. Rodar os estudos de caso e os gráficos

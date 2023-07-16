@@ -1,4 +1,4 @@
-#include <iostream>
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -8,10 +8,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fstream>
-#include <string.h>
+
 #include <chrono>
 #include <ctime>
 #include <thread>
+#include <iostream>
 
 using namespace std;
 
@@ -27,14 +28,20 @@ string CurrentTime()
 
     // Remover o caractere de nova linha da string
     time_string.erase(time_string.length() - 1);
+    
+    tm timeInfo;
+    strptime(time_string.c_str(), "%a %b %e %H:%M:%S %Y", &timeInfo);
+    char timeString[9];
+    strftime(timeString, sizeof(timeString), "%T", &timeInfo);
+    string timeFormatted(timeString);
 
     // Converter o valor dos milissegundos para string
     string ms = to_string(value % 1000);
 
     // Formatando a string com milissegundos
-    time_string += "." + string(3 - ms.length(), '0') + ms;
+    timeFormatted += ":" + string(3 - ms.length(), '0') + ms;
     cout << "end CurrentTime" << endl;
-    return time_string;
+    return timeFormatted;
 }
 
 void WhriteResult(int k)
@@ -87,7 +94,7 @@ int main(int argc, char* argv[])
     while (r > 0)
     {   
         cout << r <<"\n";
-        string msg = "REQUEST";
+        string msg = "1|"+ to_string(pthread_self()) + '|';
                 
         int send_resquest_to_server = write(csock, msg.c_str(), msg.size() + 1);
         cout << "Send the resquest" <<"\n";
@@ -99,12 +106,12 @@ int main(int argc, char* argv[])
         memset(buf,0,4096);
         cout << "Whait for server message" <<"\n";
         int recvmsg = recv(csock, buf, 4096,0); //receive message from server
-        cout << "buf : "<<buf <<"\n";
-        if(strcmp(buf,"OK")==0) //if server sends ok then proceed with the file operations == GRANT
+        cout << "buf : "<< buf[0] <<"\n";
+        if(buf[0] == '2') //if server sends ok then proceed with the file operations == GRANT
         {   
             cout << "reseave GRANT" <<"\n";
             WhriteResult(k);       
-            string msg1 = "RELEASED";
+            string msg1 = "3|"+to_string(pthread_self()) + '|';
             int send_response_to_server = write(csock, msg1.c_str(), msg1.size() + 1);;
                 if(send_response_to_server==-1)
                 {

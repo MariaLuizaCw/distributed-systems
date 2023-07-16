@@ -40,7 +40,6 @@ int readmessage(const char* message){
 
     int  position_second = message_cut.find("|");
     int pid = stoi(message_cut.substr(0,position_second));
-    cout << pid << "\n";
     return pid;
 }
 
@@ -48,27 +47,22 @@ void request(int pid,int client_socket){
 
     pthread_mutex_lock(&client_queue);
     pending_clients.push(pid); //adding pending clients in the queue
-    cout << "Front " << pending_clients.front()  << '\n';
     pthread_mutex_unlock(&client_queue);
 
-    while(pending_clients.front() != pid && go_on == 1){
-        cout << "Client " << pid << " waiting to be front" << '\n';
-        sleep(1);
-    }
+    while(pending_clients.front() != pid && go_on == 1);
 
     if (go_on == 0){
         return;
     } else {
         char grant_msg[10];
         generate_message(2, pid, grant_msg);
-        cout << grant_msg << '\n';
         int send_response_to_client = send(client_socket, grant_msg, 10, 0);
 
         pthread_mutex_lock(&client_map); 
-        if (served_clients.find(client_socket) != served_clients.end()){
-            served_clients[client_socket] += 1; 
+        if (served_clients.find(pid) != served_clients.end()){
+            served_clients[pid] += 1; 
         } else {
-            served_clients[client_socket] = 1;
+            served_clients[pid] = 1;
         }
         pthread_mutex_unlock(&client_map);
     }

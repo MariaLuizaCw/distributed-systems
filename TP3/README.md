@@ -6,7 +6,7 @@
 2. Padrão de mensagem [Yasmin]
 3. O arquivo de log do coordenador [Yasmin]
 4. Operações na região crítica do processo [Yasmin]
-
+	
 5. Servidor receber clientes sob demanda?
 
 6. Modularização do código

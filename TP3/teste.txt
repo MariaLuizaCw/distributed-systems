@@ -1,0 +1,126 @@
+Socket created with FD: 3
+Press 1 to see the threads queau of requests
+Press 2 to end the coordinator
+Press 3 to see how many times each processor was served
+counter 0
+Client connected 4 Thread ID 140468285617920
+Waiting for client 4 messages
+Buffer: 
+Client 4 send REQUEST
+Front 4
+Waiting for client 4 messages
+Buffer: REQUEST
+counter 1
+Client connected 5 Thread ID 140468277225216
+Waiting for client 5 messages
+Buffer: 
+Client 5 send REQUEST
+Front 4
+Client 5 waiting to be front
+Client 5 waiting to be front
+Client 5 waiting to be front
+Client 5 waiting to be front
+Client 5 waiting to be front
+Client 5 waiting to be front
+Client 5 waiting to be front
+Client 5 waiting to be front
+Client 5 waiting to be front
+Client 4 send RELEASED
+Front Before 4
+Front After 5
+Waiting for client 4 messages
+Buffer: RELEASED
+Client 4 send REQUEST
+Front 5
+Client 4 waiting to be front
+Waiting for client 5 messages
+Buffer: REQUEST
+Client 4 waiting to be front
+Client 4 waiting to be front
+Client 4 waiting to be front
+Client 4 waiting to be front
+Client 4 waiting to be front
+Client 4 waiting to be front
+Client 4 waiting to be front
+Client 4 waiting to be front
+Client 4 waiting to be front
+Client 4 waiting to be front
+Client 5 send RELEASED
+Front Before 5
+Front After 4
+Waiting for client 5 messages
+Buffer: RELEASED
+Waiting for client 4 messages
+Buffer: REQUEST
+Client 4 send RELEASED
+Front Before 4
+Front After 0
+Waiting for client 4 messages
+Buffer: RELEASED
+Client 4 send REQUEST
+Front 4
+Waiting for client 4 messages
+Buffer: REQUEST
+Client 4 send RELEASED
+Front Before 4
+Front After 0
+Waiting for client 4 messages
+Buffer: RELEASED
+Client 4 send REQUEST
+Front 4
+Waiting for client 4 messages
+Buffer: REQUEST
+Client 4 send RELEASED
+Front Before 4
+Front After 0
+Waiting for client 4 messages
+Buffer: RELEASED
+Client 4 send REQUEST
+Front 4
+Waiting for client 4 messages
+Buffer: REQUEST
+Client 4 send RELEASED
+Front Before 4
+Front After 0
+Waiting for client 4 messages
+Buffer: RELEASED
+Client 4 send REQUEST
+Front 4
+Waiting for client 4 messages
+Buffer: REQUEST
+Client 4 send RELEASED
+Front Before 4
+Front After 0
+Waiting for client 4 messages
+Buffer: RELEASED
+Client 4 send REQUEST
+Front 4
+Waiting for client 4 messages
+Buffer: REQUEST
+Client 4 send RELEASED
+Front Before 4
+Front After 0
+Waiting for client 4 messages
+Buffer: RELEASED
+Client 4 send REQUEST
+Front 4
+Waiting for client 4 messages
+Buffer: REQUEST
+Client 4 send RELEASED
+Front Before 4
+Front After 0
+Waiting for client 4 messages
+Buffer: RELEASED
+Client 4 send REQUEST
+Front 4
+Waiting for client 4 messages
+Buffer: REQUEST
+Client 4 send RELEASED
+Front Before 4
+Front After 0
+Waiting for client 4 messages
+Buffer: RELEASED
+Client 4 send REQUEST
+Front 4
+Waiting for client 4 messages
+Buffer: REQUEST

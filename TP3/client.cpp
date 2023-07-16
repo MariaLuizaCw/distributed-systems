@@ -44,6 +44,16 @@ string CurrentTime()
     return timeFormatted;
 }
 
+void generate_message(int code, int id, char message[10]) {
+    string mes = to_string(code) + '|' + to_string(id) + '|';
+    int len = mes.size();
+    if (10 - len > 0){
+        mes = mes.append(string( 10 - len, '0'));
+    }
+    strcpy(message, mes.c_str());
+
+}
+
 void WhriteResult(int k)
 {
     cout << "begin white" << endl;
@@ -91,36 +101,35 @@ int main(int argc, char* argv[])
     //connecting to the server
     int connreq = connect(csock,(sockaddr *)&hint, sizeof(sockaddr_in));
     //send to server
-    while (r > 0)
-    {   
-        cout << r <<"\n";
-        string msg = "1|"+ to_string(pthread_self()) + '|';
-                
-        int send_resquest_to_server = write(csock, msg.c_str(), msg.size() + 1);
-        cout << "Send the resquest" <<"\n";
-        if(send_resquest_to_server==-1)
-        {
-            cout<<"Error in sending\n";
-        }
-        char buf[4096];
-        memset(buf,0,4096);
-        cout << "Whait for server message" <<"\n";
-        int recvmsg = recv(csock, buf, 4096,0); //receive message from server
-        cout << "buf : "<< buf[0] <<"\n";
+    for(int i =0; i < r; i++){
+
+        char request_msg[10];
+        generate_message(1, connreq, request_msg);
+
+        cout << request_msg << '\n';
+        int send_resquest_to_server = send(csock, request_msg, 10, 0); 
+
+        char buf[10];
+        cout << "Wait for server message" <<"\n";
+        int recvmsg = read(csock, buf, 10); //receive message from server
+        cout << buf << '\n';
         if(buf[0] == '2') //if server sends ok then proceed with the file operations == GRANT
         {   
             cout << "reseave GRANT" <<"\n";
-            WhriteResult(k);       
-            string msg1 = "3|"+to_string(pthread_self()) + '|';
-            int send_response_to_server = write(csock, msg1.c_str(), msg1.size() + 1);;
-                if(send_response_to_server==-1)
-                {
-                    cout<<"Error in sending\n";
-                }
+            // WhriteResult(k);       
+            // sleep(4);
+            
+            char release_msg[10];
+            generate_message(3, connreq, release_msg);
+            cout << release_msg << '\n';
+
+            int send_response_to_server = send(csock, release_msg, 10, 0);;
+            if(send_response_to_server==-1)
+            {
+                cout<<"Error in sending\n";
+            }
         }
-    r--;
     }
-  
 
     close(csock);
     

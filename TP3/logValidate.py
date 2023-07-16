@@ -1,5 +1,5 @@
 def validate():
-    f = open("log.txt", "r")
+    f = open("TP3\log.txt", "r")
     lines = f.readlines()
     requests = []
     grants = []

@@ -1,4 +1,4 @@
-#include <iostream>
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -8,10 +8,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fstream>
-#include <string.h>
+
 #include <chrono>
 #include <ctime>
 #include <thread>
+#include <iostream>
 
 using namespace std;
 
@@ -27,14 +28,20 @@ string CurrentTime()
 
     // Remover o caractere de nova linha da string
     time_string.erase(time_string.length() - 1);
+    
+    tm timeInfo;
+    strptime(time_string.c_str(), "%a %b %e %H:%M:%S %Y", &timeInfo);
+    char timeString[9];
+    strftime(timeString, sizeof(timeString), "%T", &timeInfo);
+    string timeFormatted(timeString);
 
     // Converter o valor dos milissegundos para string
     string ms = to_string(value % 1000);
 
     // Formatando a string com milissegundos
-    time_string += "." + string(3 - ms.length(), '0') + ms;
+    timeFormatted += ":" + string(3 - ms.length(), '0') + ms;
     cout << "end CurrentTime" << endl;
-    return time_string;
+    return timeFormatted;
 }
 
 void generate_message(int code, int id, char message[10]) {
@@ -94,7 +101,7 @@ int main(int argc, char* argv[])
     //connecting to the server
     int connreq = connect(csock,(sockaddr *)&hint, sizeof(sockaddr_in));
     //send to server
-    for(int i =0; i < 10; i++){
+    for(int i =0; i < r; i++){
 
         char request_msg[10];
         generate_message(1, connreq, request_msg);
@@ -110,7 +117,7 @@ int main(int argc, char* argv[])
         {   
             cout << "reseave GRANT" <<"\n";
             // WhriteResult(k);       
-            sleep(4);
+            // sleep(4);
             
             char release_msg[10];
             generate_message(3, connreq, release_msg);

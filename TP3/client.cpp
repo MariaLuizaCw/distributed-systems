@@ -49,9 +49,9 @@ void generate_message(int code, int id, char message[10]) {
 
 }
 
-void WhriteResult(int k)
+void WhriteResult(int k, string test)
 {
-    string fileName = "resultado.txt";
+    string fileName = "./results/resultado_" + test + ".txt";
 
     // Abrir o arquivo em modo append
     ofstream outputFile(fileName, ios::app);
@@ -77,6 +77,7 @@ int main(int argc, char* argv[])
     //read var's process 
     int r = atoi(argv[1]);
     int k = atoi(argv[2]);
+    string test = argv[3];
     //creating client socket
     int csock = socket(AF_INET, SOCK_STREAM,0);
     if (csock == -1)
@@ -105,7 +106,7 @@ int main(int argc, char* argv[])
         int recvmsg = read(csock, buf, 10); //receive message from server
         if(buf[0] == '2') //if server sends ok then proceed with the file operations == GRANT
         {   
-            WhriteResult(k);       
+            WhriteResult(k, test);       
             // sleep(4);
             
             char release_msg[10];

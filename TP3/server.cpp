@@ -18,7 +18,6 @@ pthread_mutex_t client_map = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t logfile = PTHREAD_MUTEX_INITIALIZER;
 
 using namespace std;
-int fileinuse=0;
 int thread_ctr=0;
 int listening=0;
 int go_on = 1;
@@ -26,6 +25,7 @@ vector<pthread_t>threads;
 vector<int>clientsocket;
 queue<int>pending_clients;
 map<int,int> served_clients;
+string test;
 
 string CurrentTime()
 {   
@@ -63,7 +63,7 @@ void generate_message(int code, int id, char message[10]) {
 
 void writelog(string command, int origem, string tempo){
     pthread_mutex_lock(&logfile);
-    string fileName = "log.txt";
+    string fileName = "./results/log_" + test + ".txt";
     ofstream outputFile(fileName, ios::app);
 
     if (!outputFile)
@@ -204,7 +204,9 @@ void *thread_creator(void* x){
     pthread_exit(NULL);
 }
 
-int main() {  
+int main(int argc, char* argv[]) {  
+
+    test = argv[1];
     listening = open_socket();
     pthread_t creator_thread;
     pthread_create(&creator_thread, NULL, thread_creator, NULL);
